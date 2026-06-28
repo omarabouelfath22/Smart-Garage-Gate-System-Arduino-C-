@@ -1,0 +1,73 @@
+//Final Code..Digital Distance Meter(Garage)
+
+#include<Servo.h>
+#include<Wire.h>
+#include<LiquidCrystal_I2C.h>
+
+Servo servObj;
+LiquidCrystal_I2C displayObj(0x27,16,2);
+
+int trigPin=11;
+int echoPin=12;
+int buzzerPin=8;
+
+
+long time;
+int distance;
+
+
+void setup() {
+  
+  //Sensor
+  pinMode(trigPin,OUTPUT);
+  pinMode(echoPin,INPUT);
+  Serial.begin(9600);
+  
+  //Motor
+  servObj.attach(9);
+
+  //Buzzer
+  pinMode(buzzerPin,OUTPUT);
+
+  //LCD Display
+  displayObj.init();
+  displayObj.backlight();
+  
+}
+
+void loop() {
+
+  //Sensor : produce wave
+  digitalWrite(trigPin,LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin,HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin,LOW);
+  
+  //Sensor : Recieve time wave will go
+  time = pulseIn(echoPin,HIGH);
+
+  //Calculate Distance
+  distance = (time*0.034)/2;
+
+  //LCD : print distance
+  displayObj.setCursor(0,0);
+  displayObj.print("Distance = ");
+  displayObj.print(distance);
+  displayObj.print(" Cm   ");
+  delay(500);
+
+  //Motor + Buzzer : if distance <= 15 Cm
+  if(distance<=15){
+    //(Open Gate) motor + Buzzer
+    servObj.write(180);
+    digitalWrite(buzzerPin,LOW);
+  }
+  else {
+    //(Close Gate) motor + Buzzer
+    servObj.write(0);
+    digitalWrite(buzzerPin,HIGH);
+  }
+
+  delay(100);
+}
